@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        button {
+            width:100px;
+            height: 60px;
+            align-items: center;
+        }
+        input {
+            width: 400px;
+            height: 30px;
+            border: none;
+            font-size: 30px;
+        }
+        #pre{
+            font-size:20px;
+        }
+        
+    </style>
+</head>
+<body>
+    <div style="border: 1px solid #000;width: 412px;float: left;">
+        <input type="text" value="" id="pre"><br>
+        <input type="text" value="" id=current><br><br>
+        <button value=""  onclick="ac()">AC</button>
+        <button value=""  onclick="del()">del</button>
+        <button onclick="delHistory()">del history</button>
+        <button onclick="negate()">+/-</button><br>
+        <button value="7" onclick="chooseNumber(value)">7</button>
+        <button value="8" onclick="chooseNumber(value)">8</button>
+        <button value="9" onclick="chooseNumber(value)">9</button>
+        <button value="+" onclick="chooseOperation(value)">+</button><br>
+        <button value="4" onclick="chooseNumber(value)">4</button>
+        <button value="5" onclick="chooseNumber(value)">5</button>
+        <button value="6" onclick="chooseNumber(value)">6</button>
+        <button value="-" onclick="chooseOperation(value)">-</button><br>
+        <button value="1" onclick="chooseNumber(value)">1</button>
+        <button value="2" onclick="chooseNumber(value)">2</button>
+        <button value="3" onclick="chooseNumber(value)">3</button>
+        <button value="*" onclick="chooseOperation(value)">x</button><br>
+        <button value="." onclick="chooseNumber(value)" >.</button>
+        <button value="0" onclick="chooseNumber(value)">0</button>
+        <button value="=" onclick="compute(value)">=</button>
+        <button value="/" onclick="chooseOperation(value)">/</button>
+    </div>
+    <div>
+        <p>History</p>
+        <div id="history" style="float: left;"></div>
+    </div>
+
+    <script>
+        var main = '', sub = ''; //biến giá trị hiện tại tạm để so sánh cho nội dung hiển thị
+        var current = document.getElementById('current')
+        if(main == '' && current.value.length == 0){
+            current.value = '0';
+            sub = current.value;
+        }
+        var pre = document.getElementById('pre')
+        function del(){//hàm xóa
+            current.value = current.value.toString().slice(0, current.value.length-1);
+            if(current.value == ''){
+                current.value = '0';
+                sub = current.value;
+                main = '';
+            }
+        }
+
+        function chooseNumber(value) {//hàm chọn trường hợp hiển thị khi số nhập vào
+            if(sub == current.value && main == '' ) {//số thứ 1 sau khi nhấn =
+                current.value = value.toString() ;
+                main = current.value;
+                sub = '';
+                return;
+            }
+            else {//số thứ 2 trở đi
+                if(current.value.includes(value) == true && value == '.' ) return;
+                current.value += value.toString();
+                main = current.value;
+                sub = '' ;
+                return;
+            }
+        }
+
+        function chooseOperation(value) {//chọn hiển thị khi +-x/
+            if(current.value == '') return;
+            if(current.value.slice(-1) == '.') return;
+            if( sub == '' && main == current.value) {
+                if( pre.value !== '' && pre.value.slice(-1) !== '=' ){//tính toán khi bấm liên tiếp phép toán
+                    compute(value);
+                }else{
+                    sub = current.value;
+                    main = '';
+                    pre.value = `${current.value} ${value}`;
+                }
+            }else if( sub == current.value && main == ''){//sau khi vừa nhấn = và có kết quả xong
+                pre.value = `${current.value} ${value}`;
+                return;
+            }
+        }
+
+        function compute(value) {//hàm thực hiện phép toán tổng kết quả và hiển thị
+        let computation = ``; 
+        computation += `${pre.value}${current.value}`;
+        let a = pre.value;
+        let b = current.value;
+        let result = eval(computation);
+        if(value == '='){//xét trường hợp nhấn = hay nhấn dấu
+            pre.value = `${computation} =` ;
+            current.value = result.toString()
+        }else{
+            pre.value = `${result} ${value}`;
+            current.value = result.toString();
+        }
+        //lưu vào localStorage
+        var history = localStorage.getItem('history') ? JSON.parse(localStorage.getItem('history')) : [] ;
+        history.push(`${a}${b}=${result}`)
+        localStorage.setItem('history', JSON.stringify(history));
+        showHistory();
+        //giá trị hiện tại = tạm
+        sub = current.value ;
+        main = '';
+        }
+
+        function showHistory() {//hiện lịch sử
+            let arr = localStorage.getItem('history') ? JSON.parse(localStorage.getItem('history')) : [] ;
+            let show = `<ul>`
+            arr.forEach(function(value){
+                show += `<li>${value}</li>`;
+            })
+            show += `</ul>` ;
+            document.getElementById('history').innerHTML = show ;
+        }
+
+        function delHistory(){//xóa lịch sử
+            localStorage.clear() ;
+            document.getElementById('history').innerHTML = '' ;
+        }
+
+        function negate() {
+            if(current.value.slice(0,1) !== '-'){
+                console.log(current.value.slice(0,1));
+                current.value = `-${current.value}`;
+            }else {
+                current.value = current.value.slice(1);
+            }
+            sub = current.value;
+            main = '';
+        }
+
+        function ac(){
+            current.value ='0'; pre.value = '';
+            sub = current.value;
+            main = '';
+        }
+
+    </script>
+
+</body>
+</html>
